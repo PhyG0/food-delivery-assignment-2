@@ -107,9 +107,14 @@ RATE_LIMIT_MAX=100
 
 ## 5. Database schema (`schema.sql`)
 
--- ===============================
--- Users
--- ===============================
+
+# 🍴 Food Delivery App Database Schema
+
+
+## 📑 Schema Overview
+
+### 1. Users
+```sql
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -119,10 +124,10 @@ CREATE TABLE IF NOT EXISTS users (
     default_address_id INTEGER,
     FOREIGN KEY (default_address_id) REFERENCES addresses(id)
 );
+```
 
--- ===============================
--- Addresses
--- ===============================
+### 2. Addresses
+```sql
 CREATE TABLE IF NOT EXISTS addresses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -136,10 +141,10 @@ CREATE TABLE IF NOT EXISTS addresses (
     longitude REAL NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+```
 
--- ===============================
--- Restaurants
--- ===============================
+### 3. Restaurants
+```sql
 CREATE TABLE IF NOT EXISTS restaurants (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -156,10 +161,10 @@ CREATE TABLE IF NOT EXISTS restaurants (
     status TEXT CHECK(status IN ('open','closed')) NOT NULL DEFAULT 'closed',
     rating REAL DEFAULT 0
 );
+```
 
--- ===============================
--- Menu Categories
--- ===============================
+### 4. Menu Categories
+```sql
 CREATE TABLE IF NOT EXISTS menu_categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     restaurant_id INTEGER NOT NULL,
@@ -167,10 +172,10 @@ CREATE TABLE IF NOT EXISTS menu_categories (
     display_order INTEGER DEFAULT 0,
     FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
 );
+```
 
--- ===============================
--- Menu Items
--- ===============================
+### 5. Menu Items
+```sql
 CREATE TABLE IF NOT EXISTS menu_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category_id INTEGER NOT NULL,
@@ -183,10 +188,10 @@ CREATE TABLE IF NOT EXISTS menu_items (
     FOREIGN KEY (category_id) REFERENCES menu_categories(id),
     FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
 );
+```
 
--- ===============================
--- Cart
--- ===============================
+### 6. Cart & Cart Items
+```sql
 CREATE TABLE IF NOT EXISTS cart (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -204,10 +209,10 @@ CREATE TABLE IF NOT EXISTS cart_items (
     FOREIGN KEY (cart_id) REFERENCES cart(id),
     FOREIGN KEY (item_id) REFERENCES menu_items(id)
 );
+```
 
--- ===============================
--- Orders
--- ===============================
+### 7. Orders & Order Items
+```sql
 CREATE TABLE IF NOT EXISTS orders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -224,9 +229,6 @@ CREATE TABLE IF NOT EXISTS orders (
     FOREIGN KEY (address_id) REFERENCES addresses(id)
 );
 
--- ===============================
--- Order Items
--- ===============================
 CREATE TABLE IF NOT EXISTS order_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INTEGER NOT NULL,
@@ -237,10 +239,10 @@ CREATE TABLE IF NOT EXISTS order_items (
     special_instructions TEXT,
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
+```
 
--- ===============================
--- Delivery Partners
--- ===============================
+### 8. Delivery Partners
+```sql
 CREATE TABLE IF NOT EXISTS delivery_partners (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -249,10 +251,10 @@ CREATE TABLE IF NOT EXISTS delivery_partners (
     latitude REAL,
     longitude REAL
 );
+```
 
--- ===============================
--- Order Tracking
--- ===============================
+### 9. Order Tracking
+```sql
 CREATE TABLE IF NOT EXISTS order_tracking (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INTEGER NOT NULL,
@@ -260,10 +262,10 @@ CREATE TABLE IF NOT EXISTS order_tracking (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
+```
 
--- ===============================
--- Payments
--- ===============================
+### 10. Payments
+```sql
 CREATE TABLE IF NOT EXISTS payments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INTEGER NOT NULL,
@@ -273,10 +275,10 @@ CREATE TABLE IF NOT EXISTS payments (
     transaction_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
+```
 
--- ===============================
--- Reviews
--- ===============================
+### 11. Reviews
+```sql
 CREATE TABLE IF NOT EXISTS reviews (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INTEGER NOT NULL,
@@ -289,102 +291,71 @@ CREATE TABLE IF NOT EXISTS reviews (
     FOREIGN KEY (order_id) REFERENCES orders(id),
     FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
 );
+```
+
+---
+
+## 🚀 Features Covered
+- **Users & Addresses** – Store customer profiles and delivery locations.  
+- **Restaurants & Menus** – Restaurant info, categories, and items.  
+- **Cart & Orders** – Support for cart, checkout, and multiple items per order.  
+- **Delivery Tracking** – Track orders with delivery partners.  
+- **Payments** – Payment methods and transactions.  
+- **Reviews & Ratings** – Feedback on restaurants, food, and delivery.  
+
+---
+
+## 📌 Notes
+- Database designed for **SQLite**, but works with **PostgreSQL/MySQL** with small modifications.  
+- Some fields like `created_at`, `status`, `rating` have sensible defaults.  
+- Snapshots in `order_items` ensure data consistency even if menu prices change later.  
+
+---
+
 
 
 ---
 
 ## 6. Seed data (`seeds.sql`)
 
--- ===============================
--- Seed Data for Food Delivery App
--- ===============================
+## 📂 Files
 
--- Users
-INSERT INTO users (name, email, password, phone) VALUES
-('Alice Johnson', 'alice@example.com', 'hashed_password_1', '9876543210'),
-('Bob Smith', 'bob@example.com', 'hashed_password_2', '9123456780'),
-('Charlie Brown', 'charlie@example.com', 'hashed_password_3', '9988776655');
+- **seed.sql** → Populates the database with sample data for testing.  
 
--- Addresses
-INSERT INTO addresses (user_id, type, address_line1, address_line2, city, state, pincode, latitude, longitude) VALUES
-(1, 'home', '123 MG Road', 'Apt 101', 'Bengaluru', 'Karnataka', '560001', 12.9716, 77.5946),
-(1, 'work', 'Tech Park Phase 2', 'Block B', 'Bengaluru', 'Karnataka', '560103', 12.9352, 77.6245),
-(2, 'home', '45 Lake View', NULL, 'Mumbai', 'Maharashtra', '400001', 19.0760, 72.8777),
-(3, 'home', '221 Baker Street', NULL, 'Delhi', 'Delhi', '110001', 28.7041, 77.1025);
+---
 
--- Update users default address
-UPDATE users SET default_address_id = 1 WHERE id = 1;
-UPDATE users SET default_address_id = 3 WHERE id = 2;
-UPDATE users SET default_address_id = 4 WHERE id = 3;
+## 🗄️ Database Schema Overview
 
--- Restaurants
-INSERT INTO restaurants (name, cuisine, description, address, latitude, longitude, opening_time, closing_time, min_order_amount, delivery_fee, avg_prep_time, status, rating) VALUES
-('Spice Villa', 'Indian', 'Authentic North Indian Cuisine', '12 MG Road, Bengaluru', 12.9719, 77.5937, '09:00', '23:00', 200, 30, 25, 'open', 4.5),
-('Dragon Wok', 'Chinese', 'Delicious Chinese Food', '5 Residency Road, Bengaluru', 12.9750, 77.6050, '11:00', '23:30', 250, 40, 30, 'open', 4.2),
-('Pizza Mania', 'Italian', 'Freshly baked pizzas and pastas', 'HSR Layout, Bengaluru', 12.9100, 77.6410, '10:00', '23:00', 300, 50, 20, 'closed', 4.7);
+### 1. Users & Addresses
+- `users` → Stores customer accounts.  
+- `addresses` → Stores multiple addresses for each user (home, work, other).  
 
--- Menu Categories
-INSERT INTO menu_categories (restaurant_id, name, display_order) VALUES
-(1, 'Starters', 1),
-(1, 'Main Course', 2),
-(2, 'Noodles', 1),
-(2, 'Rice', 2),
-(3, 'Pizza', 1),
-(3, 'Pasta', 2);
+### 2. Restaurants & Menus
+- `restaurants` → Restaurant details including timings, fees, and ratings.  
+- `menu_categories` → Categories like "Starters", "Pizza", etc.  
+- `menu_items` → Food items with price, availability, and veg/non-veg info.  
 
--- Menu Items
-INSERT INTO menu_items (category_id, restaurant_id, name, description, price, is_veg, is_available) VALUES
-(1, 1, 'Paneer Tikka', 'Grilled paneer with spices', 180, 1, 1),
-(2, 1, 'Butter Chicken', 'Classic creamy chicken curry', 250, 0, 1),
-(3, 2, 'Hakka Noodles', 'Stir-fried noodles with veggies', 150, 1, 1),
-(4, 2, 'Egg Fried Rice', 'Rice tossed with egg & sauces', 160, 0, 1),
-(5, 3, 'Margherita Pizza', 'Cheese and tomato base', 300, 1, 1),
-(6, 3, 'Chicken Alfredo Pasta', 'Creamy chicken pasta', 350, 0, 1);
+### 3. Cart & Orders
+- `cart` → Temporary user cart (one per restaurant).  
+- `cart_items` → Items inside the cart.  
+- `orders` → Finalized orders with status, payment method, and delivery details.  
+- `order_items` → Snapshot of ordered items (price, name, quantity).  
 
--- Cart
-INSERT INTO cart (user_id, restaurant_id) VALUES
-(1, 1),
-(2, 2);
+### 4. Delivery & Payments
+- `delivery_partners` → Delivery staff and their availability.  
+- `order_tracking` → Tracks order status updates over time.  
+- `payments` → Records payment details.  
 
--- Cart Items
-INSERT INTO cart_items (cart_id, item_id, quantity, special_instructions) VALUES
-(1, 1, 2, 'Extra spicy'),
-(1, 2, 1, 'Less oily'),
-(2, 3, 1, NULL);
+### 5. Reviews
+- `reviews` → Stores feedback with ratings (restaurant, food, delivery).  
 
--- Orders
-INSERT INTO orders (user_id, restaurant_id, address_id, status, total_amount, delivery_fee, payment_method, special_instructions) VALUES
-(1, 1, 1, 'delivered', 610, 30, 'card', 'Ring bell on arrival'),
-(2, 2, 3, 'pending', 190, 40, 'cash', NULL);
+---
 
--- Order Items
-INSERT INTO order_items (order_id, item_id, name, price, quantity, special_instructions) VALUES
-(1, 1, 'Paneer Tikka', 180, 2, 'Extra spicy'),
-(1, 2, 'Butter Chicken', 250, 1, 'Less oily'),
-(2, 3, 'Hakka Noodles', 150, 1, NULL);
+## ▶️ How to Use
 
--- Delivery Partners
-INSERT INTO delivery_partners (name, phone, status, latitude, longitude) VALUES
-('Ramesh Kumar', '9998887770', 'available', 12.9720, 77.5940),
-('Suresh Gupta', '8887776660', 'busy', 12.9760, 77.5990);
-
--- Order Tracking
-INSERT INTO order_tracking (order_id, status) VALUES
-(1, 'Order Placed'),
-(1, 'Being Prepared'),
-(1, 'Out for Delivery'),
-(1, 'Delivered'),
-(2, 'Order Placed');
-
--- Payments
-INSERT INTO payments (order_id, method, status, amount) VALUES
-(1, 'card', 'successful', 640),
-(2, 'cash', 'pending', 190);
-
--- Reviews
-INSERT INTO reviews (order_id, restaurant_id, restaurant_rating, food_rating, delivery_rating, comment) VALUES
-(1, 1, 5, 5, 5, 'Excellent food and delivery!'),
-(2, 2, 4, 4, 3, 'Food was good but delivery was delayed.');
+### 1. Create Database
+```bash
+sqlite3 food_delivery.db < schema.sql
 
 
 ---
@@ -429,15 +400,3 @@ Provide a collection with all endpoints grouped logically (auth, addresses, rest
 * Payments simulated, no external gateway integration.
 
 ---
-
-## 12. Next steps / Bonus features
-
-* Real-time tracking via WebSockets
-* Delivery partner assignment by nearest partner
-* Promo codes, surge pricing
-* Analytics dashboard
-* Group ordering and recommendations
-
----
-
-*End of document.*
